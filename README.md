@@ -3,7 +3,7 @@
 Your data is just any **json** and the templates are written in **handlebars**. That's it. The tool was designed to get out of your way. It is up to you what your data and your templates are.
 
 ## Existing templates and data loaders
-This is still work in progress, sorry :/
+[table2json](https://github.com/jakubiszon/table2json) - database structure reader which can get table definitions from postgres and sqlserver.
 
 <!--- 
 TODO
