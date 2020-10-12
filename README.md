@@ -29,7 +29,7 @@ const json2src = require('json2src');
 (async function () {
 
 	// preparing an engine, this will compile the templates, partials and assign helpers
-	const engine = json2src({
+	const engine = await json2src({
 		templateRoot : 'path to your templates',
 		partialsRoot : 'path to your partials', // OPTIONAL
 		helpers : { /* ... */ } // OPTIONAL - an object storing helper functions, the keys of the object will be used as helper names
