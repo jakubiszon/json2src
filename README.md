@@ -102,7 +102,7 @@ We will end up with:
 ## Output file names
 Output file names are controlled by the `filePrefix` passed as part of `RunParameters` object.
 * for input files formed as `name.ext.hbs` the `filePrefix` is added with an underscore and results with `filePrefix_name.ext`
-* for input files without a name e.g. `.ext.hbs` the output is `filePresix.ext`
+* for input files without a name e.g. `.ext.hbs` the output is `filePrefix.ext`
 <!--- 
 * TODO `filePrefix` could be assigned as a function:
 ```js
