@@ -3,8 +3,8 @@
 Your data is just any **json** and the templates are written in **handlebars**. That's it. The tool was designed to get out of your way. It is up to you what your data and your templates are.
 
 ## Existing templates and data loaders
-[table2json](https://github.com/jakubiszon/table2json) - database structure reader which can get table definitions from postgres and sqlserver.
-[postgres stored procedures template](https://github.com/jakubiszon/pg-stored-procedures-hbs) - template generating CRUD ( and some more ) stored procedures for your tables.
+ - [table2json](https://github.com/jakubiszon/table2json) - database structure reader which can get table definitions from postgres and sqlserver.
+ - [postgres stored procedures template](https://github.com/jakubiszon/pg-stored-procedures-hbs) - template generating CRUD ( and some more ) stored procedures for your tables.
 
 <!--- 
 TODO
