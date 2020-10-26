@@ -103,15 +103,16 @@ We will end up with:
 Output file names are controlled by the `filePrefix` passed as part of `RunParameters` object.
 * for input files formed as `name.ext.hbs` the `filePrefix` is added with an underscore and results with `filePrefix_name.ext`
 * for input files without a name e.g. `.ext.hbs` the output is `filePrefix.ext`
-<!--- 
-* TODO `filePrefix` could be assigned as a function:
+* when the prefix is assigned a falsy value - the output file names are just the template names without the `.hbs` extensions
+* `filePrefix` could also be assigned as a function:
 ```js
-function( path, filename ) {
-	// here you could be a bit more creative about the filenames
-	return 'filename without path';
+function( filename ) {
+    // the filename param is the name of the template, without the .hbs extension
+    // the returned string will be used as the filename
+    // no tests were done for return values containing paths
+    return 'some-other-file-name.js';
 }
 ```
---->
 
 ## Partials
 Partial names reflect the structure of the `partialsRoot` folder.
