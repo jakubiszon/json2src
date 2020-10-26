@@ -40,8 +40,7 @@ module.exports = async function( engine, runParameters ) {
 		// prepare full path used to save the file
 		const filename = templatekey.substring( templatekey.lastIndexOf('\/') + 1 );
 		const outputFolder = getDirectory( templatekey );
-		const separator = filename.startsWith( '.' ) ? '' : '_';
-		var filepath = path.join( outputFolder, runParameters.filePrefix + separator + filename );
+		var filepath = path.join( outputFolder, getFileName( runParameters.filePrefix, filename ) );
 
 		// save file
 		try {
@@ -64,4 +63,15 @@ module.exports = async function( engine, runParameters ) {
 
 function onlyUnique(value, index, self) {
 	return self.indexOf(value) === index;
+}
+
+function getFileName( prefixOrFunc, filename ) {
+	if( typeof prefixOrFunc === 'function' )
+		return prefixOrFunc( filename );
+
+	if( !prefixOrFunc )
+		return filename;
+	
+	const separator = filename.startsWith( '.' ) ? '' : '_';
+	return prefixOrFunc + separator + filename
 }
