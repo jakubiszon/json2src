@@ -31,11 +31,18 @@ module.exports = async function( engine, runParameters ) {
 	 */
 	async function processTemplate( templatekey ) {
 
-		// get template function
-		var templateFunction = engine[ templatekey ];
 
 		// produce text to save in the file
-		var fileContents = templateFunction( runParameters.data );
+		let fileContents;
+		try {
+			// get template function
+			var templateFunction = engine[ templatekey ];
+
+			fileContents = templateFunction( runParameters.data );
+		} catch ( err ) {
+			console.log('error when processing ' + templatekey, err);
+			throw err;
+		}
 
 		// prepare full path used to save the file
 		const filename = templatekey.substring( templatekey.lastIndexOf('\/') + 1 );
