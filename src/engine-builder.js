@@ -12,7 +12,7 @@ async function getFile( filePath ) {
 
 /** replaces folder separators to slash */
 function normalizePath( input ) {
-    return input.replace( "\\", "/" );
+    return input.replaceAll( "\\", "/" );
 }
 
 /**
