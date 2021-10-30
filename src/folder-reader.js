@@ -6,7 +6,7 @@ module.exports = loadFilesRecursive;
 /**
  * 
  * @param {String} dir directory to read
- * @returns {String[]} list of files in the directory and subdirectories
+ * @returns {Promise<string[]>} list of files in the directory and subdirectories
  */
 async function loadFilesRecursive( dir ) {
     let filelist = [];
