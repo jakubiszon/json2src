@@ -1,15 +1,16 @@
 {
   "name": "json2src",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "code generator transforming json data into software program code",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "jakubiszon",
-  "license": "unspecified yet",
+  "license": "ISC",
   "dependencies": {
     "async": "^3.2.0",
-    "handlebars": "^4.7.6"
+    "handlebars": "^4.7.6",
+    "mocha": "^9.1.3"
   }
 }
