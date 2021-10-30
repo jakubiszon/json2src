@@ -26,21 +26,23 @@ const engineRunner = require('./src/engine-runner');
  * @function
  * @param {EngineParameters} engineParameters test test test
  */
-module.exports = async function ( engineParameters ) {
+module.exports = async function ({ templateRoot, partialsRoot, helpers }) {
 
+	if( typeof consoleOutput === 'undefined' ) consoleOutput = true;
 	const engine = await engineBuilder (
-		engineParameters.templateRoot,
-		engineParameters.partialsRoot,
-		engineParameters.helpers
+		templateRoot,
+		partialsRoot,
+		helpers
 	);
 
 	/**
 	 * Loops the data through all templates defined in the engine and saves them into outputRoot folder
 	 * @function
 	 * @param {RunParameters} runParameters test commens
+	 * @returns {Promise}
 	 */
-	async function engineRun( runParameters ) {
-		engineRunner( engine, runParameters );
+	function engineRun({ data, outputRoot, filePrefix, consoleOutput }) {
+		return engineRunner( engine, { data, outputRoot, filePrefix, consoleOutput });
 	}
 
 	return engineRun;
