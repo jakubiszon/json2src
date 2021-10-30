@@ -1,15 +1,16 @@
 const path = require('path');
 const fs = require('fs').promises;
-const async = require('async');
 
-module.exports = async function( engine, runParameters ) {
+
+module.exports = async function( engine, { data, outputRoot, filePrefix, consoleOutput } ) {
 
 	// ensure all needed directories exist
 	const directories = Object.keys( engine ).map( getDirectory );
 	await createDiectories( directories );
 
 	// for all templates found in "engine", run the processTemplate
-	await async.all( Object.keys( engine ), processTemplate );
+	const keys = Object.keys(engine);
+	await Promise.all( keys.map( processTemplate ));
 
 	async function createDiectories( arrDirectories ) {
 
@@ -19,10 +20,19 @@ module.exports = async function( engine, runParameters ) {
 		// order by length, shortest first
 		arrDirectories = arrDirectories.sort( (a,b) => a.length - b.length );
 
-		// create directories
-		await async.eachSeries( arrDirectories, async function ( dir ) {
-			await fs.mkdir( dir, { recursive: true } );
-		});
+		for( let idx = 0; idx < arrDirectories.length; idx++ ) {
+			const dir = arrDirectories[ idx ];
+			try {
+				await fs.mkdir( dir );
+			} catch {
+				// ignore - directory existing or whatever other error
+			}
+
+			// we only need to know the directory exists
+			let stat = await fs.stat( dir );
+			if( !stat.isDirectory() )
+				throw new Error( `Directory does not exist ${dir}` );
+		}
 	}
 
 	/**
@@ -31,30 +41,29 @@ module.exports = async function( engine, runParameters ) {
 	 */
 	async function processTemplate( templatekey ) {
 
-
 		// produce text to save in the file
 		let fileContents;
 		try {
 			// get template function
 			var templateFunction = engine[ templatekey ];
 
-			fileContents = templateFunction( runParameters.data );
+			fileContents = templateFunction( data );
 		} catch ( err ) {
-			console.log('error when processing ' + templatekey, err);
+			if( consoleOutput ) console.log('error when processing ' + templatekey, err);
 			throw err;
 		}
 
 		// prepare full path used to save the file
 		const filename = templatekey.substring( templatekey.lastIndexOf('\/') + 1 );
 		const outputFolder = getDirectory( templatekey );
-		var filepath = path.join( outputFolder, getFileName( runParameters.filePrefix, filename ) );
+		var filepath = path.join( outputFolder, getFileName( filePrefix, filename ) );
 
 		// save file
 		try {
-			console.log( 'saving: ', filepath );
+			if( consoleOutput ) console.log( 'saving: ', filepath );
 			await fs.writeFile(filepath, fileContents, 'utf8');
 		} catch ( err ) {
-			console.log('error when saving ' + templatekey, err);
+			if( consoleOutput ) console.log('error when saving ' + templatekey, err);
 			throw err;
 		}
 	}
@@ -64,7 +73,7 @@ module.exports = async function( engine, runParameters ) {
 		const localDirectory = localPathAndFilename.substring(0, localPathAndFilename.lastIndexOf('\/'));
 
 		// append local directory to outputRoot
-		return path.join( runParameters.outputRoot, localDirectory );
+		return path.join( outputRoot, localDirectory );
 	}
 };
 
@@ -80,5 +89,5 @@ function getFileName( prefixOrFunc, filename ) {
 		return filename;
 	
 	const separator = filename.startsWith( '.' ) ? '' : '_';
-	return prefixOrFunc + separator + filename
+	return prefixOrFunc + separator + filename;
 }
