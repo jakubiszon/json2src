@@ -6,7 +6,7 @@ const folderReader = require('./folder-reader');
 module.exports = engineBuilder;
 
 async function getFile( filePath ) {
-    const buffer = await fs.readFile( filePath );
+    const buffer = await fs.readFile( filePath, {endoding: 'utf-8'} );
     return buffer.toString();
 }
 
@@ -45,7 +45,7 @@ async function engineBuilder( templateRoot, partialsRoot, helpers ) {
     }
 
     if( !templateRoot.endsWith( '/' ) ) templateRoot += '/';
-	templateRoot = path.normalize(templateRoot);
+	templateRoot = path.normalize( templateRoot );
     let layoutFiles = await folderReader( templateRoot );
     for( const filePath of layoutFiles ) {
         if( !filePath.endsWith('.hbs') ) continue;
