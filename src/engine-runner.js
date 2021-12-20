@@ -23,7 +23,7 @@ module.exports = async function( engine, { data, outputRoot, filePrefix, console
 		for( let idx = 0; idx < arrDirectories.length; idx++ ) {
 			const dir = arrDirectories[ idx ];
 			try {
-				await fs.mkdir( dir );
+				await fs.mkdir( dir, { recursive: true } );
 			} catch {
 				// ignore - directory existing or whatever other error
 			}
