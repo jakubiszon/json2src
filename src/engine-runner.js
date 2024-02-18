@@ -9,19 +9,23 @@ module.exports = async function( engine, { data, outputRoot, filePrefix, console
 	await createDiectories( directories );
 
 	// for all templates found in "engine", run the processTemplate
-	const keys = Object.keys(engine);
+	const keys = Object.keys( engine );
 	await Promise.all( keys.map( processTemplate ));
 
-	async function createDiectories( arrDirectories ) {
+	/**
+	 * Creates directories needed for all output files.
+	 * @param {string[]} directories 
+	 */
+	async function createDiectories( directories ) {
 
 		// get unique
-		arrDirectories = arrDirectories.filter( onlyUnique );
+		directories = directories.filter( onlyUnique );
 
 		// order by length, shortest first
-		arrDirectories = arrDirectories.sort( (a,b) => a.length - b.length );
+		directories = directories.sort( (a,b) => a.length - b.length );
 
-		for( let idx = 0; idx < arrDirectories.length; idx++ ) {
-			const dir = arrDirectories[ idx ];
+		for( let idx = 0; idx < directories.length; idx++ ) {
+			const dir = directories[ idx ];
 			try {
 				await fs.mkdir( dir, { recursive: true } );
 			} catch {
@@ -37,7 +41,7 @@ module.exports = async function( engine, { data, outputRoot, filePrefix, console
 
 	/**
 	 * 
-	 * @param {string} templatekey - key of the template to process 
+	 * @param {string} templatekey - key of the template to process
 	 */
 	async function processTemplate( templatekey ) {
 
@@ -81,6 +85,12 @@ function onlyUnique(value, index, self) {
 	return self.indexOf(value) === index;
 }
 
+/**
+ * Returns the name of the file produced using user-defined prefix of function.
+ * @param {string | function(string):string} prefixOrFunc 
+ * @param {string} filename 
+ * @returns 
+ */
 function getFileName( prefixOrFunc, filename ) {
 	if( typeof prefixOrFunc === 'function' )
 		return prefixOrFunc( filename );

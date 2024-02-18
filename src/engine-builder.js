@@ -1,7 +1,7 @@
 const handlebars = require('handlebars');
 const fs = require('fs').promises;
 const path = require('path');
-const folderReader = require('./folder-reader');
+const directoryFileList = require( './directory-file-list' );
 
 module.exports = engineBuilder;
 
@@ -10,8 +10,11 @@ async function getFile( filePath ) {
     return buffer.toString();
 }
 
-/** replaces folder separators to slash */
-function normalizePath( input ) {
+/** 
+ * Replaces directory separators to slash.
+ * This is done to use uniform paths on Windows and Linux.
+ */
+function useSlashes( input ) {
     return input.replace( /\\/g, "\/" );
 }
 
@@ -31,28 +34,24 @@ async function engineBuilder( templateRoot, partialsRoot, helpers ) {
     }
 
     if( partialsRoot ) {
-        if( !partialsRoot.endsWith( '/' ) ) partialsRoot += '/';
-		partialsRoot = path.normalize(partialsRoot);
-        let partialFiles = await folderReader( partialsRoot );
+        let partialFiles = await directoryFileList( partialsRoot );
         for( const filePath of partialFiles ) {
             if( !filePath.endsWith('.hbs') ) continue;
-            const fileContent = await getFile( filePath );
-            let relativePath = filePath.substring( partialsRoot.length );
+            const fileContent = await getFile( path.join( partialsRoot, filePath ));
+            let relativePath = useSlashes( filePath );
+            // remove .hbs extension
             relativePath = relativePath.substring(0, relativePath.lastIndexOf('.')) || relativePath;
-            relativePath = normalizePath( relativePath );
             localHbs.registerPartial( relativePath, fileContent );
         }
     }
 
-    if( !templateRoot.endsWith( '/' ) ) templateRoot += '/';
-	templateRoot = path.normalize( templateRoot );
-    let layoutFiles = await folderReader( templateRoot );
+    let layoutFiles = await directoryFileList( templateRoot );
     for( const filePath of layoutFiles ) {
         if( !filePath.endsWith('.hbs') ) continue;
-        const fileContent = await getFile( filePath );
-        let relativePath = filePath.substring( templateRoot.length );
+        const fileContent = await getFile( path.join( templateRoot, filePath ));
+        let relativePath = useSlashes( filePath );
+        // remove .hbs extension
         relativePath = relativePath.substring(0, relativePath.lastIndexOf('.')) || relativePath;
-        relativePath = normalizePath( relativePath );
         hbsEngine[ relativePath ] = localHbs.compile( fileContent );
     }
 
