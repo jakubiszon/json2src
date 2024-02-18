@@ -37,7 +37,7 @@ async function engineBuilder( templateRoot, partialsRoot, helpers ) {
         for( const filePath of partialFiles ) {
             if( !filePath.endsWith('.hbs') ) continue;
             const fileContent = await getFile( filePath );
-            let relativePath = filePath.substr( partialsRoot.length );
+            let relativePath = filePath.substring( partialsRoot.length );
             relativePath = relativePath.substring(0, relativePath.lastIndexOf('.')) || relativePath;
             relativePath = normalizePath( relativePath );
             localHbs.registerPartial( relativePath, fileContent );
@@ -50,7 +50,7 @@ async function engineBuilder( templateRoot, partialsRoot, helpers ) {
     for( const filePath of layoutFiles ) {
         if( !filePath.endsWith('.hbs') ) continue;
         const fileContent = await getFile( filePath );
-        let relativePath = filePath.substr( templateRoot.length );
+        let relativePath = filePath.substring( templateRoot.length );
         relativePath = relativePath.substring(0, relativePath.lastIndexOf('.')) || relativePath;
         relativePath = normalizePath( relativePath );
         hbsEngine[ relativePath ] = localHbs.compile( fileContent );
