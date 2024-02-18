@@ -1,6 +1,6 @@
 {
   "name": "json2src",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "code generator transforming json data into software program code",
   "main": "index.js",
   "scripts": {
@@ -9,10 +9,9 @@
   "author": "jakubiszon",
   "license": "ISC",
   "dependencies": {
-    "async": "^3.2.0",
-    "handlebars": "^4.7.6"
+    "handlebars": "^4.7.8"
   },
   "devDependencies": {
-    "mocha": "^9.1.3"
+    "mocha": "^9.2.2"
   }
 }
