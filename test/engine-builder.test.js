@@ -13,7 +13,9 @@ describe ( 'engine-builder', function() {
      * Prepares the "engine" variable used in the tests
      */
     async function loadEngine() {
-        engine = await engineBuilder( path.join( __dirname, './templates/complex' ));
+        engine = await engineBuilder({
+            templateRoot: path.join( __dirname, './templates/complex')
+        });
     }
 
     /**

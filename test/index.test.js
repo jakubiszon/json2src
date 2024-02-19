@@ -10,6 +10,7 @@ describe( 'json2src', function run() {
 	before( removeTestOutput );
 	it( 'creates output file for simple template', createsOutputFilesForSimpleTemplate );
 	it( 'creates output structure for complex template', createsOutputStructureForComplexTemplate );
+	it( 'includes template names in keys property', includesTemplateNamesInKeysProperty );
 
 });
 
@@ -79,4 +80,24 @@ async function createsOutputStructureForComplexTemplate() {
 	const fileTxt = await fs.readFile( nestedOutputFile, { encoding: 'utf-8' });
 	assert.ok( fileTxt.indexOf( "<div>zonguldak</div>" ) >= 0 );
 	assert.ok( fileTxt.indexOf( "<div>TURKEY</div>" ) >= 0 );
+}
+
+async function includesTemplateNamesInKeysProperty() {
+	const engine = await json2src({
+		templateRoot: path.join( __dirname, 'templates/complex' ),
+		partialsRoot: path.join( __dirname, 'templates/partials' ),
+		helpers: {
+			"toLowerCase" : function ( input ) {
+				return input.toString().toLowerCase();
+			},
+		
+			"toUpperCase" : function ( input ) {
+				return input.toString().toUpperCase();
+			},			
+		}
+	});
+
+	assert.ok( engine.templateKeys.includes( 'complex-top.html' ));
+	assert.ok( engine.templateKeys.includes( 'nested1/complex-nested1.html' ));
+	assert.ok( engine.templateKeys.includes( 'nested1/nested2/complex-nested2.html' ));
 }

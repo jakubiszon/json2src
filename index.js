@@ -1,63 +1,27 @@
 const engineBuilder = require('./src/engine-builder');
 const engineRunner = require('./src/engine-runner');
+const runParameters = require( './src/run-parameters' );
+const engineParameters = require( './src/engine-parameters' );
 
 /**
- * @typedef EngineParameters
- * @param {string} templateRoot directory storing the layouts, subdirectories are included
- * @param {string} [partialsRoot] directory storing the partials, subdirectories are included
- * @param {Object.<string, function>} [helpers] an object mapping the helper functions
+ * Builds a template engine and returns a function used to run it.
+ * @param {engineParameters} engineParameters
+ * @returns {function(runParameters): Promise} a function which runs the engine, it also contains a templateKeys property which lists the templates
  */
-function EngineParameters() {
-	this.templateRoot = "";
-	this.partialsRoot = "";
-	this.helpers = {};
-}
+module.exports = async function ( engineParameters ) {
 
-/**
- * @function fileNameFunc returns filenames (without paths) to use when saving output files
- * @param {string} templateName path and anme of the template, relative to the templateRoot of the engine
- * @returns {string} filename (without path) to use to save the output file
- */
-function fileNameFunc( templateName ) {
-	return "filename";
-}
-
- /**
-  * @typedef RunParameters
-  * @property {Object} data - data passed to each of the layouts specified in the engine
-  * @property {string} outputRoot - folder to which compiled output files will be saved
-  * @property {string|fileNameFunc} filePrefix - NOT USED YET prefix to use for each filename or a function to make the filename
-  */
-function RunParameters () {
-	this.data = {};
-	this.outputRoot = "";
-	this.filePrefix = "";
-	this.consoleOutput = true;
-}
-
-/**
- * Returns an engine function.
- * @function
- * @param {EngineParameters} engineParameters
- */
-module.exports = async function ({ templateRoot, partialsRoot, helpers }) {
-
-	if( typeof consoleOutput === 'undefined' ) consoleOutput = true;
-	const engine = await engineBuilder (
-		templateRoot,
-		partialsRoot,
-		helpers
-	);
+	const engine = await engineBuilder ( engineParameters );
 
 	/**
-	 * Loops the data through all templates defined in the engine and saves them into outputRoot folder
-	 * @function
-	 * @param {RunParameters} runParameters 
-	 * @returns {Promise}
+	 * Loops the data through all templates defined in the engine and saves them into outputRoot directory
+	 * @param {runParameters} runParameters 
+	 * @returns {Promise} a promise that resolves when all output files are created
 	 */
-	function engineRun({ data, outputRoot, filePrefix, consoleOutput }) {
-		return engineRunner( engine, { data, outputRoot, filePrefix, consoleOutput });
+	function engineRun( runParameters ) {
+		return engineRunner( engine, runParameters );
 	}
+
+	engineRun.templateKeys = Object.keys( engine );
 
 	return engineRun;
 }

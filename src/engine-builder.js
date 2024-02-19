@@ -1,6 +1,7 @@
 const handlebars = require('handlebars');
 const fs = require('fs').promises;
 const path = require('path');
+const engineParameters = require( './engine-parameters' );
 const directoryFileList = require( './directory-file-list' );
 
 module.exports = engineBuilder;
@@ -20,24 +21,27 @@ function useSlashes( input ) {
 
 /**
  * Builds an object storing compiled views using the specified partials and helpers.
- * @param {string} templateRoot directory storing the layouts, subdirectories are included
- * @param {string} [partialsRoot] directory storing the partials, subdirectories are included
- * @param {Object.<string, function>} [helpers] an object mapping the helper functions
+ * @param {engineParameters} engineParameters object defining templates, partials and helpers
+ * @returns {Object.<string, function>} an object mapping each template key to a compiled handlebars function
  */
-async function engineBuilder( templateRoot, partialsRoot, helpers ) {
-    let localHbs = handlebars.create();
-    let hbsEngine = { };
+async function engineBuilder( engineParameters ) {
 
-    if( helpers ) {
-        for( const helperName in helpers )
-            localHbs.registerHelper( helperName, helpers[ helperName ] );
+    if( typeof engineParameters.templateRoot !== 'string' ) throw 'engineParameters.templateRoot must be a string';
+    if( !engineParameters.templateRoot ) throw 'engineParameters.templateRoot must have a value';
+
+    let localHbs = handlebars.create();
+    let templateMap = { };
+
+    if( engineParameters.helpers ) {
+        for( const helperName in engineParameters.helpers )
+            localHbs.registerHelper( helperName, engineParameters.helpers[ helperName ] );
     }
 
-    if( partialsRoot ) {
-        let partialFiles = await directoryFileList( partialsRoot );
+    if( engineParameters.partialsRoot ) {
+        let partialFiles = await directoryFileList( engineParameters.partialsRoot );
         for( const filePath of partialFiles ) {
             if( !filePath.endsWith('.hbs') ) continue;
-            const fileContent = await getFile( path.join( partialsRoot, filePath ));
+            const fileContent = await getFile( path.join( engineParameters.partialsRoot, filePath ));
             let relativePath = useSlashes( filePath );
             // remove .hbs extension
             relativePath = relativePath.substring(0, relativePath.lastIndexOf('.')) || relativePath;
@@ -45,15 +49,15 @@ async function engineBuilder( templateRoot, partialsRoot, helpers ) {
         }
     }
 
-    let layoutFiles = await directoryFileList( templateRoot );
+    let layoutFiles = await directoryFileList( engineParameters.templateRoot );
     for( const filePath of layoutFiles ) {
         if( !filePath.endsWith('.hbs') ) continue;
-        const fileContent = await getFile( path.join( templateRoot, filePath ));
+        const fileContent = await getFile( path.join( engineParameters.templateRoot, filePath ));
         let relativePath = useSlashes( filePath );
         // remove .hbs extension
         relativePath = relativePath.substring(0, relativePath.lastIndexOf('.')) || relativePath;
-        hbsEngine[ relativePath ] = localHbs.compile( fileContent );
+        templateMap[ relativePath ] = localHbs.compile( fileContent );
     }
 
-    return hbsEngine;
+    return templateMap;
 }

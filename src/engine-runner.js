@@ -1,8 +1,15 @@
 const path = require('path');
 const fs = require('fs').promises;
 
+const runParameters = require( './run-parameters' );
 
-module.exports = async function( engine, { data, outputRoot, filePrefix, consoleOutput } ) {
+module.exports = engineRunner
+
+/**
+ * @param {Object.<string, function>} engine - a template engine prepared by engine-builder script
+ * @param {runParameters} runParameters - specifies data and parameters to run through the template engine
+ */
+async function engineRunner( engine, runParameters ) {
 
 	// ensure all needed directories exist
 	const directories = Object.keys( engine ).map( getDirectory );
@@ -51,23 +58,23 @@ module.exports = async function( engine, { data, outputRoot, filePrefix, console
 			// get template function
 			var templateFunction = engine[ templatekey ];
 
-			fileContents = templateFunction( data );
+			fileContents = templateFunction( runParameters.data );
 		} catch ( err ) {
-			if( consoleOutput ) console.log('error when processing ' + templatekey, err);
+			if( runParameters.consoleOutput ) console.log('error when processing ' + templatekey, err);
 			throw err;
 		}
 
 		// prepare full path used to save the file
 		const filename = templatekey.substring( templatekey.lastIndexOf('\/') + 1 );
 		const outputFolder = getDirectory( templatekey );
-		var filepath = path.join( outputFolder, getFileName( filePrefix, filename ) );
+		var filepath = path.join( outputFolder, getFileName( runParameters.filePrefix, filename ) );
 
 		// save file
 		try {
-			if( consoleOutput ) console.log( 'saving: ', filepath );
+			if( runParameters.consoleOutput ) console.log( 'saving: ', filepath );
 			await fs.writeFile(filepath, fileContents, 'utf8');
 		} catch ( err ) {
-			if( consoleOutput ) console.log('error when saving ' + templatekey, err);
+			if( runParameters.consoleOutput ) console.log('error when saving ' + templatekey, err);
 			throw err;
 		}
 	}
@@ -77,7 +84,7 @@ module.exports = async function( engine, { data, outputRoot, filePrefix, console
 		const localDirectory = localPathAndFilename.substring(0, localPathAndFilename.lastIndexOf('\/'));
 
 		// append local directory to outputRoot
-		return path.join( outputRoot, localDirectory );
+		return path.join( runParameters.outputRoot, localDirectory );
 	}
 };
 
