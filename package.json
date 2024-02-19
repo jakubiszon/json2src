@@ -1,6 +1,6 @@
 {
   "name": "json2src",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "code generator transforming json data into software program code",
   "main": "index.js",
   "scripts": {
