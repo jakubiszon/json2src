@@ -6,16 +6,6 @@ Your data is just any **json** and the templates are written in **handlebars**. 
  - [table2json](https://github.com/jakubiszon/table2json) - database structure reader which can get table definitions from postgres and sqlserver.
  - [postgres stored procedures template](https://github.com/jakubiszon/pg-stored-procedures-hbs) - template generating CRUD ( and some more ) stored procedures for your tables.
 
-<!--- 
-TODO
-This tool started as part of a code generator for relational databases. There are some templates existing:
-* REST api for postgres running on node/express
-* CRUD stored procedures for sqlserver
-* CRUD stored procedures for postgres
-
-The above templates rely on structures extracted by [table2json](https://example.com) which is a tiny database structure extractor for **postgres** and **sqlserver**.
---->
-
 ## Usage
 This program needs to be added to your `package.json`. To install run:
 ```
@@ -30,22 +20,36 @@ const json2src = require('json2src');
 
 	// preparing an engine, this will compile the templates, partials and assign helpers
 	const engine = await json2src({
-		templateRoot : 'path to your templates',
-		partialsRoot : 'path to your partials', // OPTIONAL
-		helpers : { /* ... */ } // OPTIONAL - an object storing helper functions, the keys of the object will be used as helper names
+		// path to templates directory
+		templateRoot : 'path/to/templates',
+
+		// OPTIONAL - path to partials directory
+		partialsRoot : 'path/to/partials',
+
+		// OPTIONAL - an object storing helper functions, the keys of the object will be used as helper names
+		helpers : { /* ... */ }
 	});
 
 	// now we have an engine, we can run it any number of times
 	await engine ({
-		data : {/* data passed to each template */}, // if somehow your templates needed no data this could as well be undefined
-		outputRoot : 'path to your output folder',
-		filePrefix : 'filename prefix for this run'
+		// data passed to each template
+		data : { ... },
+
+		// path to output directory
+		outputRoot : 'path/to/output',
+
+		// filename prefix or a function naming the files, explained below
+		filePrefix : 'filename prefix for this run',
+
+		// OPTIONAL - a function taking full template name as param and returning boolean
+		// to decide if the given template should be included in this run
+		isTemplateIncludedCallback: function( templateKey ) { ... }
 	});
 
 })();
 
 ```
-The above example used `async/await`. Please note callbacks are not supported. If you need them you might need to wrap the objects with additional code.
+The above example used `async/await`. Callbacks are not supported.
 
 ## Input and output structure
 At the moment all input file names are expected to end with `.hbs`.
@@ -53,11 +57,18 @@ At the moment all input file names are expected to end with `.hbs`.
 The structure of the output files matches the input structure.
 If we call:
 ```js
-const engine = await json2src( { templateRoot : 'template_root' } );
-await engine({ data:{/*...*/}, outputRoot : 'output_root', filePrefix: 'person' })
+const engine = await json2src({
+	templateRoot : 'template_root'
+});
+
+await engine({
+	data:{/*...*/},
+	outputRoot : 'output_root',
+	filePrefix: 'person'
+});
 ```
 
-And the template_root has the following stucture:
+And the `template_root` contains the following stucture:
 ```
 /template_root/
 ├─ /data/
@@ -67,7 +78,7 @@ And the template_root has the following stucture:
 │  ├─ .js.hbs
 ```
 
-The output_root will be stuffed with following files:
+The `output_root` will be stuffed with following files:
 ```
 /output_root/
 ├─ /data/
@@ -106,8 +117,12 @@ Output file names are controlled by the `filePrefix` passed as part of `RunParam
 * when the prefix is assigned a falsy value - the output file names are just the template names without the `.hbs` extensions
 * `filePrefix` could also be assigned as a function:
 ```js
-function( filename ) {
-    // the filename param is the name of the template, without the .hbs extension
+/**
+ * @param {string} filename - name of the template, without the path and .hbs extension
+ * @param {string} templateKey - relative path to the file and name without extension, helps to distinguish files with same name in different directories
+ */
+function( filename, templateKey ) {
+    // the filename param is the 
     // the returned string will be used as the filename
     // no tests were done for return values containing paths
     return 'some-other-file-name.js';
@@ -115,7 +130,7 @@ function( filename ) {
 ```
 
 ## Partials
-Partial names reflect the structure of the `partialsRoot` folder.
+Partial names reflect the structure of the `partialsRoot` directory.
 
 Example partial structure:
 ```
@@ -152,4 +167,31 @@ The above helpers could be referenced as:
 ```hbs
 {{toLowerCase someVariable}}
 {{toUpperCase someVariable}}
+```
+
+## Skipping files
+[Run parameters]((src/run-parameters.js)) can include a callback function `isTemplateIncludedCallback` which can tell the engine to skip selected files.
+
+The following run will not process templates which are found inside `modules` subdirectory of the `templateRoot`. Additionally output directories are only created when an output file needs them. In the case below, `modules` directory would not be created inside `outputRoot`.
+```js
+await engine({
+	data:{/*...*/},
+	outputRoot : 'output_root',
+	filePrefix: 'test',
+	isTemplateIncludedCallback: function ( templateKey ) {
+		return !templateKey.startsWith( 'modules/' );
+	}
+});
+```
+
+### Listing template keys
+If you need the list of template keys before running the engine, the list is assigned as `templateKeys` property of the engine function.
+
+```js
+const engine = await json2src({
+	templateRoot : 'template_root'
+});
+
+// print all template keys registered in the engine
+console.log( engine.templateKeys );
 ```

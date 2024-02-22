@@ -21,15 +21,16 @@ module.exports = class runParameters {
 	filePrefix;
 
 	/**
-	 * Decides whether the run should output non-error information to the console.
-	 */
-	consoleOutput;
-
-	/**
 	 * Optional callback which will be passed the template key to decide
 	 * if the template should be included in the current run.
 	 * If this callback is not specified - all templates are included.
 	 * @type {null | function(string):boolean}
-	 */
+	*/
 	isTemplateIncludedCallback;
+
+	/**
+	 * Decides whether the run should output non-error information to the console.
+	 * @type {boolean}
+	 */
+	consoleOutput;
 }

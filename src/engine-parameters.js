@@ -1,3 +1,6 @@
+/**
+ * Specifies parameters of an engine to build.
+ */
 module.exports = class engineParameters {
     /**
      * Directory to read the templates from.
