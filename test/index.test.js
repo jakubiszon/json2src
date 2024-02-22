@@ -7,15 +7,22 @@ const outputDir = path.join( __dirname, 'output' );
 
 describe( 'json2src', function run() {
 
-	before( removeTestOutput );
+	before( prepareEnvironment );
 	it( 'creates output file for simple template', createsOutputFilesForSimpleTemplate );
 	it( 'creates output structure for complex template', createsOutputStructureForComplexTemplate );
 	it( 'includes template names in keys property', includesTemplateNamesInKeysProperty );
+	it( 'calls isTemplateIncludedCallback callback and kips files', callIsTemplateIncludedCallback );
+	it( 'renamed output file with callback', renamedOutputFile );
 
 });
 
+async function prepareEnvironment() {
+	await removeTestOutput();
+	await buildOutputWithTwoCatalogs();
+}
+
 /**
- * Removes of all output files.
+ * Removes of all output files that already exist.
  */
 async function removeTestOutput() {
 	// get all paths in the output except the .gitignore
@@ -24,6 +31,17 @@ async function removeTestOutput() {
 	//console.log( locallyRelativePaths );
 	const removePromises = locallyRelativePaths.map( p => fs.rm( p, { recursive: true }));
 	await Promise.all( removePromises );
+}
+
+async function buildOutputWithTwoCatalogs() {
+	const engine = await json2src({ templateRoot: path.join( __dirname, 'templates/with-two-catalogs' ) });
+
+	await engine({
+		data: {},
+		outputRoot : outputDir,
+		filePrefix : function( filename, templateKey ) { return 'example.html' },
+		isTemplateIncludedCallback: function( templateKey ) { return templateKey != 'catalog-1/template-1.html'; }
+	});
 }
 
 /**
@@ -100,4 +118,37 @@ async function includesTemplateNamesInKeysProperty() {
 	assert.ok( engine.templateKeys.includes( 'complex-top.html' ));
 	assert.ok( engine.templateKeys.includes( 'nested1/complex-nested1.html' ));
 	assert.ok( engine.templateKeys.includes( 'nested1/nested2/complex-nested2.html' ));
+}
+
+async function callIsTemplateIncludedCallback() {
+	// note that the output for this test was built in buildOutputWithTwoCatalogs
+
+	try {
+		const catalog = path.join( outputDir, 'catalog-2' );
+		await fs.stat( catalog );
+	} catch {
+		// we expect catalog-2 to exist
+		assert.fail( 'catalog-2 should exist' );
+	}
+
+	try {
+		const file = path.join( outputDir, 'catalog-1/example.html' );
+		await fs.stat( file );
+		assert.fail( 'catalog-1 should not exist' );
+	} catch {
+		// we expect catalog-1 to not exist
+		// do nothing
+	}
+}
+
+async function renamedOutputFile() {
+	// note that the output for this test was built in buildOutputWithTwoCatalogs
+
+	try {
+		const file = path.join( outputDir, 'catalog-2/example.html' );
+		await fs.stat( file );
+	} catch {
+		// we expect catalog-2 to exist
+		assert.fail( 'catalog-2/example.html should exist' );
+	}
 }

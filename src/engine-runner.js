@@ -11,13 +11,16 @@ module.exports = engineRunner
  */
 async function engineRunner( engine, runParameters ) {
 
+	const allTemplateKeys = Object.keys( engine )
+	const runTemplateKeys = runParameters.isTemplateIncludedCallback ?
+		allTemplateKeys.filter( runParameters.isTemplateIncludedCallback ) : allTemplateKeys;
+
 	// ensure all needed directories exist
-	const directories = Object.keys( engine ).map( getDirectory );
+	const directories = runTemplateKeys.map( getDirectory );
 	await createDiectories( directories );
 
 	// for all templates found in "engine", run the processTemplate
-	const keys = Object.keys( engine );
-	await Promise.all( keys.map( processTemplate ));
+	await Promise.all( runTemplateKeys.map( processTemplate ));
 
 	/**
 	 * Creates directories needed for all output files.
@@ -28,8 +31,11 @@ async function engineRunner( engine, runParameters ) {
 		// get unique
 		directories = directories.filter( onlyUnique );
 
-		// order by length, shortest first
-		directories = directories.sort( (a,b) => a.length - b.length );
+		// order by length, longest first
+		directories = directories.sort( (a,b) => b.length - a.length );
+
+		// remove any directory which starts another one
+		directories = directories.filter( dir => !directories.some( other => other !== dir && other.startsWith( dir )));
 
 		for( let idx = 0; idx < directories.length; idx++ ) {
 			const dir = directories[ idx ];
@@ -81,7 +87,7 @@ async function engineRunner( engine, runParameters ) {
 
 	function getDirectory( localPathAndFilename ) {
 		// remove the trailing filename
-		const localDirectory = localPathAndFilename.substring(0, localPathAndFilename.lastIndexOf('\/'));
+		const localDirectory = localPathAndFilename.substring(0, localPathAndFilename.lastIndexOf('\/') + 1 );
 
 		// append local directory to outputRoot
 		return path.join( runParameters.outputRoot, localDirectory );
